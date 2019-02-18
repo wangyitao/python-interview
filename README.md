@@ -579,6 +579,10 @@ lis=[3, 1, 4, 2, 3]
 T=[]
 [T.append(i) for i in lis if i not in T])
 print(T)
+
+# 或者
+T=sorted(set(lis), key=lis.index)
+print(T)
 ```
 
 ##### 在什么情况下y!=x-(x-y)会成立？
@@ -674,3 +678,606 @@ tuple2=(1,2,3,4,5)
 res=dict(zip(tuple1,tuple2))
 print(res)
 ```
+
+##### 1<(2==2)和1<2==2的结果分别是什么？
+* 第一个为False，第二个为True，暂时按照第一个类型进行相应的转换
+
+##### 如何打乱一个排好序的列表
+* 使用random.shuffle()
+```python
+import random
+alist=[1,2,3,4,5,6]
+random.shuffle(alist)
+print(alist)
+```
+
+##### 如何查找一个字符串中特定的字符？find和index的差异？
+* 使用find和index方法查找
+
+1. find()方法：查找子字符串，若找到返回从0开始的下标值，若找不到返回-1
+2.  index()方法：python 的index方法是在字符串里查找子串第一次出现的位置，类似字符串的find方法，不过比find方法更好的是，如果查找不到子串，会抛出异常，而不是返回-1
+
+##### 把a='aaabbcccdddde'这种形式的字符串，压缩成a3b2c3d4e1这种形式。
+```python
+a='aaabbcccdddde'
+aa=''
+for i in sorted(list(set(a)),key=a.index):
+    aa=aa+i+str(a.count(i))
+print(aa)
+```
+
+##### 一个数如果恰好等于它的因子之和，这个数就称为‘完数’，比如6=1+2+3，编程找出1000以内的所有的完数。
+```python
+wanshu=[]
+for i in range(1,1001):
+    s=0
+    for j in range(1,i//2+1):
+        if i % j ==0:
+            s+=j
+    else:
+        if i==s:
+            wanshu.append(i)
+print(wanshu)
+```
+
+##### 输入一个字符串，输出该字符串的字符的所有组合。如输入'abc',输出a,b,c,ab,ac,bc,abc.
+
+```python
+def getC(s):
+    if not s:
+        return
+    len_s=len(s)
+    ss=[]
+    for i in range(len_s):
+        combination(s,0,i,ss)
+aaa=[]
+def combination(s,index,num,ss):
+    global aaa
+    if num==-1:
+        return
+    if index==len(s):
+        return
+    ss.append(s[index])
+    aaa.append(''.join(ss))
+    combination(s,index+1,num-1,ss)
+    ss.pop()
+    combination(s,index+1,num,ss)
+    
+getC('123')
+print(aaa)
+print(sorted(set(aaa),key=lambda x:len(str(x))))
+```
+
+
+##### 给定一个非空的字符串，判断它是否可以由它的一个子串重复多次构成。给定的字符串只含有小写英文字母，并且长度不超过10000。例如：'ababab',返回True，'ababa'，返回False
+```python
+def solution(s):
+    ll=len(s)
+    for i in range(1,ll//2+1):
+        if ll % i == 0:
+            j=0
+            while s[:i]==s[j:j+i] and j<ll:
+                j=j+i
+            if j==ll:
+                return True
+    return False
+    
+print(solution('abababa'))
+```
+
+##### python递归的最大层数？
+* 1000
+
+##### filter、map、reduce的作用。
+1. filter() 相当于过滤器的作用
+ ```python
+s=[1,2,3,5,6,8,9,10,25,12,30]
+# 筛选出3的倍数
+# 第一个参数为一个返回True或者False的函数，第二个参数为可迭代对象
+# 该函数把可迭代对象依次传入第一个函数，如果为True，则筛选
+d=filter(lambda x:True if x % 3 == 0 else False,s)
+print(list(d))
+```
+2. map()函数，
+```python
+# 第一个参数为函数，依次将后面的参数传给第一个函数，并执行函数
+# 如果有多个参数则，依次将后面的对应传给参数
+s=map(lambda x,y:x+y,range(10),range(10))
+print(list(s))
+ss=map(lambda x:x*x,range(10))
+print(list(ss))
+```
+3. reduce()函数
+```python
+from functools import reduce
+# 开始的时候将可迭代对象的第一个数和第二个数当成x和y
+# 然后将第一次函数的执行结果当成x，然后再传入一个数当成y
+# 再执行函数
+s=reduce(lambda x,y:x+y,range(101))
+print(s) # 相当于0+1+2+……+99+100
+```
+
+##### 什么是闭包
+* 在函数中可以（嵌套）定义另一个函数时，如果内部的函数引用了外部的函数的变量，则可能产生闭包。闭包可以用来在一个函数与一组“私有”变量之间创建关联关系。在给定函数被多次调用的过程中，这些私有变量能够保持其持久性。
+```python
+# 内部函数使用了外部函数的变量，就相当于闭包
+def func1():
+    a=1
+    def inner():
+        return a
+    return inner
+print(func1()())
+```
+
+##### 简述生成器，迭代器，装饰器以及应用场景
+[参考链接](https://blog.csdn.net/weixin_39387409/article/details/85089652)
+
+1. 迭代器对象实现了iter()方法
+2. 迭代器实现了iter()和next()方法，迭代器对象从集合的第一个元素开始访问，直到所有的元素被访问完结束
+3. 生成器是迭代器的一种，一个函数调用时返回一个迭代器，这个函数就叫生成器。通常带有yield
+4. 装饰器是一个以函数作为参数，并返回一个替换函数的可执行函数，是闭包的一种应用。通常用来给一个函数添加功能
+
+
+##### 使用生成器编写一个函数实现生成指定个数的斐波那契数列
+```python
+def fib2(imax):
+    t,a,b=0,0,1
+    while t<imax:
+        yield b
+        a,b=b,a+b
+        t+=1
+        
+for i in fib2(10):
+    print(i)
+```
+
+##### 一行代码通过filter和lambda函数输出alist=[1,22,2,33,23,32]中索引为奇数的值
+```python
+alist=[1,22,2,33,23,32]
+ss=[x[1] for x in filter(lambda x:x[0]%2==1,enumerate(alist))]
+print(ss)
+```
+
+##### 编写一个函数实现十进制转62进制，分别用0-9A-Za-z,表示62位字母
+```python
+import string
+print(string.ascii_lowercase) # 小写字母
+print(string.ascii_uppercase) # 大写字母
+print(string.digits) # 0-9
+
+s=string.digits+string.ascii_uppercase+string.ascii_lowercase
+def _10_to_62(num):
+    ss=''
+    while True:
+        ss=s[num%62]+ss
+        if num//62==0:
+            break
+        num=num//62
+    return ss
+print(_10_to_62(65))
+```
+
+##### 实现一个装饰器，限制该函数被调用的频率，如10秒一次
+
+```python
+import time
+from functools import wraps
+def dec(func):
+    key=func.__name__
+    cache={key:None}
+    @wraps(func)
+    def inner(*args,**kwargs):
+        result=None
+        if cache.get(key) is None:
+            cache[key]=time.time()
+            result=func(*args,**kwargs)
+            print('执行函数中')
+        else:
+            now=time.time()
+            if now-cache[key]>10:
+                cache[key]=now
+                result=func(*args,**kwargs)
+                print('执行函数中')
+            else:
+                print('函数执行受限')
+        return result
+    return inner
+    
+@dec
+def add(x,y):
+    print(x+y)
+    
+add(1,2)
+add(1,3)
+time.sleep(10)
+add(3,4)
+```
+
+##### 实现一个装饰器，通过一次调用，使函数重复执行5次
+```python
+from functools import wraps
+def dec(func):
+    @wraps(func)
+    def inner(*args,**kwargs):
+        result=[func(*args,**kwargs) for i in range(5)]
+        return result
+    return inner
+    
+@dec
+def add(x,y):
+    return x+y
+print(add(1,2))
+```
+
+##### 生成器与函数的区别？
+* 生成器和函数的主要区别在于函数 return a value，生成器 yield a value同时标记或记忆point of the yield 以便于在下次调用时从标记点恢复执行。 yield 使函数转换成生成器，而生成器反过来又返回迭代器。
+```python
+# 简单实现生成器
+def dec():
+    n=0
+    for i in range(10):
+        yield n
+        n+=i
+        
+for i in dec():
+    print(i)
+```
+
+##### 列表推导式[i for i in range(10)]和生成式表达式(i for i in range(10))的区别
+[参考文章](https://blog.csdn.net/qq_36523839/article/details/79807866)
+
+1. 列表推导式的结果是一个列表。
+2. 生成器表达式的结果是一个生成器，它和列表推导式类似，它一次处理一个对象，而不是一口气处理和构造整个数据结构，可以节约内存。
+
+##### python如何定义函数时如何书写可变参数和关键字参数？
+```python
+def func(a,*args,b=1,**kwargs):
+    pass
+```
+
+##### python中enumerate的意思是什么？
+* 枚举的意思，同时得到可迭代对象，如列表和元组的索引和值，以元组形式返回
+
+##### 描述以下dict的items和iteritems的区别
+* python3中没有iteritems
+* items和iteritems大致相同，只是items返回的是一个列表，iteritems返回的是一个迭代器。
+
+##### 是否使用过functools中的函数？他的作用是什么？
+1. functools.wraps()
+    * 在装饰器中用过，如果不使用wraps，则原始函数的__name__和__doc__的值就会丢失
+ 2. functools.reduce()
+     * 第一个参数是一个函数，第二个参数是一个可迭代对象，代码如下：
+```python
+# 下面代码相当于从1加到9
+from functools import reduce
+a=reduce(lambda x,y:x+y,range(10))
+print(a)
+```
+
+##### 如何判断一个值是方法还是函数？
+[参考链接](https://blog.csdn.net/amoscn/article/details/77074403)
+1. 使用type()来判断，如果是method为方法，如果是function则是函数。
+2. 与类和实例无绑定关系的function都属于函数（function）
+3. 与类和实例有绑定关系的function都属于方法
+
+
+##### 请编写一个函数将ip地址转换成一个整数。如10.3.9.12转换成00001010 00000011 00001001 00001100，然后转换成整数
+```python
+def ip2int(ip):
+    nums=ip.split('.')
+    # zfill()函数是补0
+    to_bin=[bin(int(i))[2:].zfill(8) for i in nums]
+    return int(''.join(to_bin),2)
+i=ip2int('127.0.0.1')
+print(i)
+```
+
+##### lambda表达式格式以及应用场景？
+* 格式：lambda 参数列表 : 返回表达式
+* 应用场景：常见的在filter，reduce以及map中使用。
+
+##### pass的使用
+* 通常用来标记一个还未写的代码的位置，pass不做任何事情，一般用来做占位语句，保持程序结构的完整性
+
+##### *arg和**kwargs的作用
+* 用来接收不确定个数的参数，\*args通常用来接收不确定个数的非关键字参数，而\*\*kwargs通常用来接收不确定个数的关键字参数
+
+##### 如何在函数中设置一个全局变量？
+* 在函数中使用global关键字定义变量
+
+##### 求以下代码结果：
+```python
+def num():
+    return [lambda x:i*x for i in range(4)]
+print([m(2) for m in num()])
+```
+* 答案：[6,6,6,6]
+
+##### yield from 和 yield 的区别
+[简述yield和yield from](https://blog.csdn.net/lamusique/article/details/85845225)
+
+```python
+# 下面a()和b()是等价的
+def a():
+    yield from [1,2,3,4,5]
+def b():
+    for i in [1,2,3,4,5]:
+        yield i
+for i in a():
+    print(i)
+for i in b():
+    print(i)
+```
+* yield将一个函数变成一个生成器
+* yield 返回一个值
+* yield from后面接可迭代对象，一个一个返回值。
+
+##### 求以下代码的输出结果
+```python
+collapse=True
+processFunc=collapse and (lambda s:' '.join(s.split())) or (lambda s:s)
+print(processFunc('i\tam\ntest\tproject!'))
+
+collapse=False
+processFunc=collapse and (lambda s:' '.join(s.split())) or (lambda s:s)
+print(processFunc('i\tam\ntest\tproject!'))
+```
+* 答案：
+>i am test project!
+>i       am
+>test    project!
+
+
+##### 编写一个函数，找出数组中没有重复的值的和
+```python
+def func(lis):
+    lis1=[]
+    del_lis=[]
+    for i in lis:
+        if i not in lis1:
+            if i not in del_lis:
+                lis1.append(i)
+        else:
+            del_lis.append(i)
+            lis1.remove(i)
+    return sum(lis1)
+    
+def func2(lis):
+    return sum([i for i in set(lis) if lis.count(i)==1])
+    
+print(func2([3,4,1,2,5,6,6,5,4,3,3]))
+```
+
+##### 下面代码的执行结果是
+```python
+a=1
+def bar():
+    a+=3
+    
+bar()
+print(a)
+```
+* 答案：运行出错
+
+##### 写一个函数，计算出以下字母所代表的数字，每个字母值不一样
+```python
+for A in range(1,10):
+    for B in range(10):
+        if A==B:
+            continue
+        for C in range(1,10):
+            if C in [A,B]:
+                continue
+            for D in range(10):
+                if D in [A,B,C]:
+                    continue
+                for E in range(1,10):
+                    if E in [A,B,C,D]:
+                        continue
+                    for F in range(10):
+                        if F in [A,B,C,D,E]:
+                            continue
+                        for G in range(1,10):
+                            if G in [A,B,C,D,E,F]:
+                                continue
+                            for H in range(10):
+                                if H in [A,B,C,D,E,F,G]:
+                                    continue
+                                for P in range(1,10):
+                                    if P in [A,B,C,D,E,F,G,H]:
+                                        continue
+                                    if (A*10+B)-(C*10+D)==(E*10+F) and (E*10+F)+(G*10+H)==(P*100+P*10+P):
+                                    print(A,B,C,D,E,F,G,H,P)
+```
+
+#### 写出如下代码的输出结果
+[参考链接](https://www.cnblogs.com/z-x-y/p/9157238.html)
+
+```python
+def decorator_a(func):
+    print('Get in decorator_a')
+    def inner_a(*args, **kwargs):
+        print('Get in inner_a')
+        return func(*args, **kwargs)
+    return inner_a
+    
+def decorator_b(func):
+    print('Get in decorator_b')
+    def inner_b(*args, **kwargs):
+        print('Get in inner_b')
+        return func(*args, **kwargs)
+    return inner_b
+    
+@decorator_b #f=decorator_b(f)
+@decorator_a #f=decorator_a(f)
+def f(x):
+    print('Get in f')
+    return x * 2
+f(1)
+```
+* 答案
+>Get in decorator_a
+>Get in decorator_b
+>Get in inner_b
+>Get in inner_a
+>Get in f
+
+* 解释
+ >当我们对f传入参数1进行调用时，inner_b被调用了，他会先打印Get in inner_b,然后在inner_b内部调用了inner_a,所以会再打印Get in inner_a,然后再inner_a内部调用原来的f,并且将结果作为最终的返回总结：装饰器函数在被装饰函数定义好后立即执行从下往上执行函数调用时从上到下执行
+
+
+##### 写出以下代码的输出结果：
+```python
+def test():
+    try:
+        raise ValueError('something wrong')
+    except ValueError as e:
+        print('error occured')
+        return
+    finally:
+        print('ok')
+test()
+```
+* 结果(finally无论怎样都会执行)
+>error occured
+>ok
+
+##### 求出以下代码的输出结果
+```python
+mydict={'a':1,'b':2}
+def func(d):
+    d['a']=0
+    return d
+    
+func(mydict)
+mydict['c']=2
+print(mydict)
+```
+* 结果
+>{'a': 0, 'b': 2, 'c': 2}
+
+##### 写个函数接收一个文件夹名称作为参数，显示文件夹中文件的路径，以及其中包含的文件夹中文件的如今
+```python
+# 方法一
+import os
+def Test1(rootDir):
+    list_dirs = os.walk(rootDir)
+    for root, dirs, files in list_dirs:
+        for d in dirs:
+            print(os.path.join(root, d))
+        for f in files:
+            print(os.path.join(root, f))
+Test1(r'C:\Users\felix\Desktop\aaa')
+print('###################')
+# 方法二
+import os
+def Test2(rootDir):
+    paths=os.listdir(rootDir)
+    for lis in paths:
+        path=os.path.join(rootDir,lis)
+        print(path)
+        if os.path.isdir(path):
+             Test2(path)
+Test2(r'C:\Users\felix\Desktop\aaa')
+```
+
+##### re的match和search的区别
+* match（）函数是在string的开始位置匹配，如果不匹配，则返回None
+* search()会扫描整个string查找匹配；也就是说match（）只有在0位置匹配成功的话才有返回，
+
+##### 什么是正则的贪婪匹配？贪婪模式和非贪婪模式的区别？
+[参考文档](https://www.cnblogs.com/ILoke-Yang/p/8060003.html)
+
+* 贪婪匹配:正则表达式一般趋向于最大长度匹配，也就是所谓的贪婪匹配。
+* 非贪婪匹配：就是匹配到结果就好，就少的匹配字符。
+* 区别：默认是贪婪模式；在量词后面直接加上一个问号？就是非贪婪模式。
+
+##### 如何使用python删除一个文件或者文件夹？
+```python
+import os
+import shutil
+os.remove(path) # 删除文件
+os.removedirs(path) # 删除空文件夹
+shutil.rmtree(path) # 删除文件夹，可以为空也可以不为空
+```
+
+##### logging模块的作用以及应用场景
+* logging模块定义的函数和类为应用程序和库的开发实现了一个灵活的事件日志系统。
+* 记录日志
+
+##### json序列化时可以处理的数据类型有哪些？如何定制支持datetime类型？序列化时，遇到中文转成unicode，如何保持中文形式？
+1. 可以处理的数据类型是 string、int、list、tuple、dict、bool、null
+2. 通过自定义时间序列化转换器
+```python
+import json
+from json import JSONEncoder
+from datetime import datetime
+class ComplexEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.strftime(‘%Y-%m-%d %H:%M:%S‘)
+        else:
+            return super(ComplexEncoder,self).default(obj)
+d = { ‘name‘:‘alex‘,‘data‘:datetime.now()}
+print(json.dumps(d,cls=ComplexEncoder))
+# {"name": "alex", "data": "2018-05-18 19:52:05"}
+```
+3. 使用ensure_ascii=False参数
+
+##### 写出邮箱的正则表达式
+
+```python
+import re
+pp=re.compile('[a-zA-Z0-9_-]+@[0-9A-Za-z]+(\.[0-9a-zA-Z]+)+')
+if pp.match('1403179190@qq.com'):
+    print('ok')
+```
+
+##### 写python爬虫分别用到了哪些模块？分别有什么用？
+* 模块
+    * request，发起请求
+    * pyquery，解析html数据
+    * beautifulsoup，解析html数据
+    * aiohttp，异步发送请求
+* 框架
+    * pyspider，web界面的爬虫框架
+    * scrapy，爬虫框架
+    * selenium，模拟浏览器的爬虫框架
+
+##### sys.path.append('xxx')的作用
+* 添加搜索路径
+
+##### 输入某年某月某日，判断这是这一年的第几天？
+```python
+date=input('请输入某年某月某日，格式：xxxx.xx.xx')
+def get_day(date):
+    days1=[31,28,31,30,31,30,31,31,30,31,30,31]
+    days2=[31,29,31,30,31,30,31,31,30,31,30,31]
+    year,month,day = [int(i) for i in date.split('.')]
+    if year % 400 ==0 or (year % 4==0 and year % 100!=0):
+         days=days2
+    else:
+        days=days1
+    return sum(days[:month-1])+day
+print(get_day(date))
+```
+
+##### 简述面向对象的三大特性？
+[参考链接](https://www.cnblogs.com/lfpython/p/7346385.html)
+* 继承，封装和多态
+    * 继承：
+        * 继承就是继承的类直接拥有被继承类的属性而不需要在自己的类体中重新再写一遍，其中被继承的类叫做父类、基类，继承的类叫做派生类、子类。
+    * 封装：
+        * 封装就是把类中的属性和方法定义为私有的，方法就是在属性名或方法名前加双下划线，而一旦这样定义了属性或方法名后，python会自动将其转换为_类名__属性名（方法名）的格式，在类的内部调用还是用双下划线加属性名或方法名，在类的外部调用就要用_类名__属性名（方法名）。父类的私有属性和方法，子类无法对其进行修改。
+    * 多态：
+        * 多态就是不同的对象可以调用相同的方法然后得到不同的结果，有点类似接口类的感觉，在python中处处体现着多态，比如不管你是列表还是字符串还是数字都可以使用+和*。
+
+##### 什么是鸭子模型？
+* 鸭子类型（英语：duck typing）是动态类型的一种风格。在这种风格中，一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由当前方法和属性的集合决定。
+
+##### super的作用
+* 当子类中的方法与父类中的方法重名时，子类中的方法会覆盖父类中的方法，那么，如果我们想实现同时调用父类和子类中的同名方法，就需要使用到super()这个函数，用法为super().函数名()
+
+##### mro是什么？
+* 对于支持继承的编程语言来说，其方法（属性）可能定义在当前类，也可能来自于基类，所以在方法调用时就需要对当前类和基类进行搜索以确定方法所在的位置。而搜索的顺序就是所谓的「方法解析顺序」（Method Resolution Order，或MRO）。
+
