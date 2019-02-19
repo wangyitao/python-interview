@@ -1,4 +1,4 @@
-# python-interview
+## python-interview
 
 ##### 为什么学python
 
@@ -224,7 +224,7 @@
 ##### 简述python的深浅拷贝
 * 浅拷贝只是对另外一个变量的内存地址的拷贝，这两个变量指向同一个内存地址的变量值。
     * 浅拷贝的特点：
-        * 公用一个值
+        * 共用一个值
         * 这两个变量的内存地址一样
         * 对其中一个变量的值改变，另外一个变量的值也会改变
 * 深拷贝是一个变量对另外一个变量的值拷贝
@@ -232,6 +232,7 @@
         * 两个变量的内存地址不同
         * 两个变量各有自己的值，且互不影响
         * 对其任意一个变量的值的改变不会影响另外一个
+* 如果是不可变类型，则深浅拷贝只拷贝引用，如果是可变类型，浅拷贝只拷贝第一层引用，深拷贝无论多少层引用都拷贝
 
 
 ##### python的垃圾回收机制
@@ -1281,3 +1282,378 @@ print(get_day(date))
 ##### mro是什么？
 * 对于支持继承的编程语言来说，其方法（属性）可能定义在当前类，也可能来自于基类，所以在方法调用时就需要对当前类和基类进行搜索以确定方法所在的位置。而搜索的顺序就是所谓的「方法解析顺序」（Method Resolution Order，或MRO）。
 
+##### 什么是c3算法？
+* c3算法是python新式类中用来产生mro顺序的一套算法。即多继承的查找规则。
+
+##### 列举面向对象中带双下划线的特殊方法
+
+>\_\_new__：可以调用其它类的构造方法或者直接返回别的对象来作为本类的实例。
+>\_\_init__： 负责类的实例化
+>\_\_call__：对象后边加括号，触发执行
+>\_\_str__：print打印一个对象时。
+>\_\_doc__：类的注释，该属性是无法继承的。
+>\_\_getattr__：在使用调用属性（方式、属性）不存在的时候触发
+>\_\_setattr__：添加/修改属性会触发它的执行
+>\_\_dellattr__：删除属性的时候会触发
+>\_\_delete__：采用del删除属性时，触发
+
+##### 双下划线和单下划线的区别
+
+* "单下划线" 开始的成员变量叫做保护变量，意思是只有类对象和子类对象自己能访问到这些变量；
+* "双下划线" 开始的是私有成员，意思是只有类对象自己能访问，连子类对象也不能访问到这个数据。
+
+##### 实例变量和类变量的区别
+
+* 实例变量是对于每个实例都独有的数据
+* 类变量是该类所有实例共享的属性和方法
+
+##### 实例方法、静态方法和类方法的区别
+* 实例方法：第一个参数必须是实例对象，通常为self。实例方法只能由实例对象调用。
+* 类方法：使用装饰器@classmethod。第一个参数为当前类的对象，通常为cls。实例对象和类对象都可以调用类方法。
+* 静态方法：使用装饰器@staticmethod。没有self和cls参数。方法体中不能使用类或者实例的任何属性和方法。实例对象和类对象都可以调用。
+
+##### isinstance和type的作用
+* 两者都用来判断对象的类型
+* 对于一个类的之类对象的类型判断，type就不行了，而isinstance可以。
+```pyyhon
+class A(object):
+    pass
+class B(A):
+    pass
+    
+ba=B()
+ab=A()
+print(type(ba)==A) # False
+print(type(ab)==A) # True
+print(isinstance(ab,A)) # True
+print(isinstance(ba,A)) # True
+```
+
+##### 使用with语句的好处是什么
+*  使用with后不管with中的代码出现什么错误，都会进行对当前对象进行清理工作。例如file的file.close()方法，无论with中出现任何错误，都会执行file.close（）方法
+*  只有支持上下文管理器的对象才能使用with，即在对象内实现了两个方法：__enter__()和__exit__()
+
+##### 写一个的支持with语句的类
+[参考链接](https://www.cnblogs.com/yidashi110/p/10091991.html)
+```python
+class W(object):
+    def __init__(self):
+        pass
+    def __enter__(self):
+        print('进入with语句')
+        return self
+        
+    def __exit__(self,*args,**kwargs):
+        print('退出with语句')
+        
+with W() as w:
+    print('之前')
+    print(w)
+    print('之后')
+```
+
+
+##### 实现一个单例模式。(尽可能多的方法)
+[参考链接](https://www.cnblogs.com/huchong/p/8244279.html)
+```python
+# 方法一：使用__new__()
+import threading
+class Singleton(object):
+    _instance_lock = threading.Lock()
+    def __init__(self):
+        pass
+        
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(Singleton, "_instance"):
+            with Singleton._instance_lock:
+                if not hasattr(Singleton, "_instance"):
+                    Singleton._instance = object.__new__(cls)
+        return Singleton._instance
+        
+obj1 = Singleton()
+obj2 = Singleton()
+print(obj1 is obj2)
+
+# 方法二：使用元类来创建
+import threading
+
+class SingletonType(type):
+    _instance_lock = threading.Lock()
+    def __call__(cls, *args, **kwargs):
+        if not hasattr(cls, "_instance"):
+            with SingletonType._instance_lock:
+                if not hasattr(cls, "_instance"):
+                    cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+        
+class Singleton(metaclass=SingletonType):
+    def __init__(self):
+        pass
+ 
+obj1 = Singleton()
+obj2 = Singleton()
+print(obj1 is obj2)
+```
+
+##### 如何判断一个对象是否可调用？哪些对象是可调用对象？如何定义一个类，使其对象本身就是可调用对象？
+* 使用callable函数判断。
+* 可调用对象有7类：
+    * 用户自定义函数
+    * 内置函数
+    * 内置方法
+    * 方法(定义在类中的函数)
+    * 类
+    * 类实例(如果类中定义了__call__方法，那么这个类的实例就是可调用对象)
+    * 生成器函数 
+* 在类中定义__call__方法，实例对象加()是即调用__call__的方法
+
+##### 手写一个栈
+
+```python
+#给一个点，我们能够根据这个点知道一些内容
+class Node(object):
+    def __init__(self,val): #定位的点的值和一个指向
+        self.val=val #指向元素的值,原队列第二元素
+        self.next=None #指向的指针
+        
+class stack(object):
+    def __init__(self):
+        self.top=None #初始化最开始的位置
+        
+    def push(self,n):#添加到栈中
+        n=Node(n) #实例化节点
+        n.next=self.top #顶端元素传值给一个指针
+        self.top=n
+        return n.val
+        
+    def pop(self): #退出栈
+        if self.top == None:
+            return None
+        else:
+            tmp=self.top.val
+            self.top=self.top.next #下移一位，进行
+            return tmp
+            
+if __name__=="__main__":
+    s=stack()
+    print(s.pop())
+    s.push(1)
+    print(s.pop())
+    s.push(2)
+    s.push(3)
+    print(s.pop())
+    s.push(3)
+    s.push(3)
+    s.push(3)
+    print(s.pop())
+    print(s.pop())
+    print(s.pop())
+    print(s.pop())
+```
+
+##### 使用两个队列实现一个栈
+```python
+class Stack(object):
+    def __init__(self):
+        self.queueA=[]
+        self.queueB=[]
+    def push(self,node):
+        self.queueA.append(node)
+    def pop(self):
+        if len(self.queueA)==0:
+            return None
+        while len(self.queueA)!=1:
+            self.queueB.append(self.queueA.pop(0))
+        self.queueA,self.queueB=self.queueB,self.queueA
+        return self.queueB.pop()
+        
+st=Stack()
+print(st.pop())
+st.push(1)
+print(st.pop())
+st.push(1)
+st.push(1)
+st.push(1)
+print(st.pop())
+print(st.pop())
+print(st.pop())
+```
+* 注意上面两个栈的实现方法，第一种的效率高，队列的这种方法效率低
+
+##### 有如下链表类，请实现单链表逆置。
+```python
+class ListNode:
+    def __init__(self,val):
+        self.val=val
+        self.next=None
+        
+class Solution:
+    def reverseList(self,pHead):
+        if not pHead or not pHead.next:
+            return pHead
+        last=None
+        while pHead:
+            tmp=pHead.next
+            pHead.next=last
+            last=pHead
+            pHead=tmp
+        return last
+```
+
+##### 类的加载和实例化过程
+
+1. 在堆内存中生成class对象, 把静态变量和静态方法加载到方法区, 这个堆内存中的class对象是方法区数据的入口
+2. 静态变量默认初始化
+3. 静态变量显式初始化
+4. 执行静态代码块
+5. 成员变量默认初始化, 显示初始化
+6. 执行构造函数
+
+##### 手写一个队列
+```python
+class Queue(object):
+    def __init__(self,size):
+        self.queue=[]
+        self.size=size
+    def is_empty(self):
+        return not bool(len(self.queue))
+    def is_full(self):
+        return len(self.queue)==self.size
+    def enqueue(self,val):
+        if not self.is_full():
+            self.queue.insert(0,val)
+            return True
+        return False
+    def dequeue(self):
+        if not self.is_empty():
+            return self.queue.pop()
+        return None
+s=Queue(2)
+print(s.is_empty)
+s.enqueue(1)
+s.enqueue(2)
+print(s.is_full())
+print(s.dequeue())
+print(s.dequeue())
+print(s.is_empty())
+```
+
+##### python的底层网络交互模块有哪些
+* socket，urllib，requests，pycurl
+
+##### 简述OSI七层协议
+[参考链接](https://zhidao.baidu.com/question/568531489.html)
+* 为了实现计算机系统的互连，OSI参考模型把整个网络的通信功能划分为7个层次，同时也定义了层次之间的相互关系以及各层所包括的服务及每层的功能。OSI的七层由低到高依次为：物理层、数据链路层、网络层、传输层、会话层、表示层、应用层，下三层（物理层、数据链路层、网络层）面向数据通信，而上三层（会话层、表示层、应用层）则面向资源子网，而传输层则是七层中最为重要的一层。它位于上层和下层中间，起承上启下的作用。
+
+##### 什么是C/S和B/S架构
+[参考链接](https://www.cnblogs.com/1130136248wlxk/p/5192043.html)
+* C/S 架构是一种典型的两层架构，其全称是Client/Server，即客户端服务器端架构，其客户端包含一个或多个在用户的电脑上运行的程序，而服务器端有两种，一种是数据库服务器端，客户端通过数据库连接访问服务器端的数据；另一种是Socket服务器端，服务器端的程序通过Socket与客户端的程序通信。
+* B/S架构的全称为Browser/Server，即浏览器/服务器结构。Browser指的是Web浏览器，极少数事务逻辑在前端实现，但主要事务逻辑在服务器端实现，Browser客户端，WebApp服务器端和DB端构成所谓的三层架构。B/S架构的系统无须特别安装，只有Web浏览器即可。
+
+##### 简述TCP三次握手，四次挥手的流程。
+[参考链接](https://blog.csdn.net/qq_38950316/article/details/81087809)
+
+* 三次握手
+    * 第一次握手：客户端的应用进程主动打开，并向客户端发出请求报文段。其首部中：SYN=1,seq=x。
+    * 第二次握手：服务器应用进程被动打开。若同意客户端的请求，则发回确认报文，其首部中：SYN=1,ACK=1,ack=x+1,seq=y。
+    * 第三次握手：客户端收到确认报文之后，通知上层应用进程连接已建立，并向服务器发出确认报文，其首部：ACK=1,ack=y+1。当服务器收到客户端的确认报文之后，也通知其上层应用进程连接已建立。
+* 四次挥手
+    * 第一次挥手：数据传输结束以后，客户端的应用进程发出连接释放报文段，并停止发送数据，其首部：FIN=1,seq=u。
+    * 服务器端收到连接释放报文段之后，发出确认报文，其首部：ack=u+1,seq=v。此时本次连接就进入了半关闭状态，客户端不再向服务器发送数据。而服务器端仍会继续发送。
+    * 第三次挥手：若服务器已经没有要向客户端发送的数据，其应用进程就通知服务器释放TCP连接。这个阶段服务器所发出的最后一个报文的首部应为：FIN=1,ACK=1,seq=w,ack=u+1。
+    *  第四次挥手：客户端收到连接释放报文段之后，必须发出确认：ACK=1,seq=u+1,ack=w+1。 再经过2MSL(最长报文端寿命)后，本次TCP连接真正结束，通信双方完成了他们的告别。
+
+##### 如果已经建立了TCP连接，但是客户端突然出现故障了怎么办
+
+* TCP还设有一个保活计时器，显然，客户端如果出现故障，服务器不能一直等下去，白白浪费资源。服务器每收到一次客户端的请求后都会重新复位这个计时器，时间通常是设置为2小时，若两小时还没有收到客户端的任何数据，服务器就会发送一个探测报文段，以后每隔75秒发送一次。若一连发送10个探测报文仍然没反应，服务器就认为客户端出了故障，接着就关闭连接。
+
+
+##### 什么是arp协议
+
+* ARP全称“Address Resolution Protocol”，地址解析协议。
+* 实现局域网内通过IP地址获取主机的MAC地址。
+* MAC地址48位主机的物理地址，局域网内唯一。
+* ARP协议类似DNS服务，但不需要配置服务。
+* ARP协议是三层协议。
+
+##### TCP和UDP的区别
+1. TCP面向连接（如打电话要先拨号建立连接）;UDP是无连接的，即发送数据之前不需要建立连接
+2. TCP提供可靠的服务。也就是说，通过TCP连接传送的数据，无差错，不丢失，不重复，且按序到达;UDP尽最大努力交付，即不保证可靠交付
+3. UDP具有较好的实时性，工作效率比TCP高，适用于对高速传输和实时性有较高的通信或广播通信。
+4. 每一条TCP连接只能是点到点的;UDP支持一对一，一对多，多对一和多对多的交互通信
+5. TCP对系统资源要求较多，UDP对系统资源要求较少。
+
+##### 为什么基于tcp协议的通信比基于udp协议的通信更可靠
+
+* TCP是面向连接的传输协议，每次都需要建立一个可以相互信任的连接，中间有个三次握手过程。而UDP是面向无连接的传输协议，不需要建立安全的连接，
+
+
+##### 什么是局域网和广域网
+* 局域网（Local Area Network），简称LAN，是指在某一区域内由多台计算机互联成的计算机组。“某一区域”指的是同一办公室、同一建筑物、同一公司和同一学校等，一般是方圆几千米以内。局域网可以实现文件管理、应用软件共享、打印机共享、扫描仪共享、工作组内的日程安排、电子邮件和传真通信服务等功能。局域网是封闭型的，可以由办公室内的两台计算机组成，也可以由一个公司内的上千台计算机组成。
+* 广域网（Wide Area Network），简称WAN，是一种跨越大的、地域性的计算机网络的集合。通常跨越省、市，甚至一个国家。广域网包括大大小小不同的子网，子网可以是局域网，也可以是小型的广域网。
+* 两者区别：
+    * 范围不同，广域网比局域网广
+    * 接口类型不同
+    * 速率不同
+    * 协议不同
+
+##### 什么是socket？简述基于tcp协议的socket通信流程？
+* socket通常也称作"套接字"，用于描述IP地址和端口，是一个通信链的句柄。
+* 通信流程：
+    1. 服务端创建一个ServerSocket对象,指定端口号,ServerSocket对象等待客户端的连接请求。
+    2. 客户端创建一个Socket对象,指定主机地址和端口号,向服务端发出连接请求。
+    3. 服务端接收到客户端的连接请求,建立一条TCP连接,再创建一个Socket对象与客户端的Socket对象进行通信。
+    4. 服务端和客户端分别创建字节输入流和字节输出流,通过字节输入流获得对方发来的数据,通过字节输出流向对方发送数据。
+    5. 当一方决定结束通信时,向对方发送结束信息;另一方接收到结束信息后,双方分别关闭各自的TCP连接。
+    6. ServerSocket对象停止等待客户端的连接请求。
+
+##### 什么是粘包？出现粘包的原因？
+* 粘包：多个数据包被连续存储于连续的缓存中，在对数据包进行读取时由于无法确定发生方的发送边界，而采用某一估测值大小来进行数据读出，若双方的size不一致时就会使指发送方发送的若干包数据到接收方接收时粘成一包，从接收缓冲区看，后一包数据的头紧接着前一包数据的尾。
+* 出现粘包现象的原因是多方面的，它既可能由发送方造成，也可能由接收方造成。
+    * 发送方引起的粘包是由TCP协议本身造成的，TCP为提高传输效率，发送方往往要收集到足够多的数据后才发送一包数据。若连续几次发送的数据都很少，通常TCP会根据优化算法把这些数据合成一包后一次发送出去，这样接收方就收到了粘包数据。
+    * 接收方引起的粘包是由于接收方用户进程不及时接收数据，从而导致粘包现象。这是因为接收方先把收到的数据放在系统接收缓冲区，用户进程从该缓冲区取数据，若下一包数据到达时前一包数据尚未被用户进程取走，则下一包数据放到系统接收缓冲区时就接到前一包数据之后，而用户进程根据预先设定的缓冲区大小从系统接收缓冲区取数据，这样就一次取到了多包数据。
+
+##### 发生粘包现象如何处理？
+
+1. 对于发送方引起的粘包现象，用户可通过编程设置来避免，TCP提供了强制数据立即传送的操作指令push，TCP软件收到该操作指令后，就立即将本段数据发送出去，而不必等待发送缓冲区满；
+2. 对于接收方引起的粘包，则可通过优化程序设计、精简接收进程工作量、提高接收进程优先级等措施，使其及时接收数据，从而尽量避免出现粘包现象；
+3. 由接收方控制，将一包数据按结构字段，人为控制分多次接收，然后合并，通过这种手段来避免粘包。
+
+##### IO多路复用的作用？
+* I/O多路复用是用于提升效率，单个进程可以同时监听多个网络连接IO。
+* 与多进程和多线程技术相比，I/O多路复用技术的最大优势是系统开销小，系统不必创建进程/线程，也不必维护这些进程/线程，从而大大减小了系统的开销。
+
+##### 什么是防火墙？防火墙的作用是什么？
+* 在互联网上防火墙是一种非常有效的网络安全模型，通过它可以隔离风险区域(即Internet或有一定风险的网络)与安全区域(局域网)的连接，同时不会妨碍人们对风险区域的访问。所以它一般连接在核心交换机与外网之间。
+* 防火墙的作用：
+    1. 过滤进出网络的数据 
+    2. 管理进出访问网络的行为 
+    3. 封堵某些禁止业务 
+    4. 记录通过防火墙信息内容和活动 
+    5. 对网络攻击检测和告警
+
+##### select、poll、epoll模型的区别
+[参考链接](https://www.cnblogs.com/jeakeven/p/5435916.html)
+
+1. 支持一个进程所能打开的最大连接数
+    * select的最大连接数大概32*32，或者32*64
+    * poll本质和select没区别，但是它没有最大连接数限制
+    * epoll大概10万左右(1G的机器)
+2. FD剧增后带来的IO效率问题
+    * select和poll每次调用都会对连接进行线性遍历，所以会随着FD的增加会造成遍历速度慢的“线性下降性能问题”
+    * epoll没有前两个的线性下降的性能问题，但是当socket都很活跃的情况下，可能会有性能问题。
+3. 消息传递方式
+    * select和poll内核需要将消息传递到用户空间，都需要内核拷贝动作。
+    * epoll通过内核和用户空间共享一块内存来实现
+
+##### 简述进程，线程，协程的区别以及应用场景？
+* 区别：
+    1. 线程是资源分配的单位
+    2. 线程是操作系统调度的单位
+    3. 进程切换需要的资源很大，效率很低
+    4. 线程切换需要的资源一般，效率一般(在不考虑GIL的情况下
+    5. 协程切换任务资源很小，效率高
+    6. 多进程，多线程根据cpu核数不一样可能是并行的，但是协程是在一个线程中，所以是并发。)
+* 应用场景
+    1. 协程：当程序中存在大量不需要cpu的操作时，适用协程
+    2. 计算密集型，用进程。IO密集型，用线程。
