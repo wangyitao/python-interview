@@ -2361,6 +2361,16 @@ ps.subscribe('liao')  #从liao订阅消息for item in ps.listen():        #监�
 [参考链接](https://blog.csdn.net/hxpjava1/article/details/79553073)
 
 
+##### redis中watch的作用
+
+> watch 用于在进行事务操作的最后一步也就是在执行exec 之前对某个key进行监视
+> 如果这个被监视的key被改动，那么事务就被取消，否则事务正常执行.
+> 一般在MULTI 命令前就用watch命令对某个key进行监控.如果想让key取消被监控，可以用unwatch命令
+
+
+
+
+
 ##### [redis常见的面试问题参考](https://www.cnblogs.com/Survivalist/p/8119891.html)
 
 ##### DNS域名解析过程
@@ -2374,3 +2384,9 @@ ps.subscribe('liao')  #从liao订阅消息for item in ps.listen():        #监�
 8. NameServer服务器查询域名与IP映射关系表，返回目标IP记录和TTL值给DNS Server域名服务器。
 9. Local DNS Server根据TTL缓存该IP解析。
 10. 缓存结果返回给用户，用户根据TTL缓存到本地操作系统中，域名解析过程结束。
+
+##### 了解过Hbase，DB2，SQLServer，Access吗
+* Hbase：HBase是一个分布式的、面向列的开源数据库
+* DB2：一套关系型数据库管理系统，
+* SQLServer：SQL Server是由Microsoft开发和推广的关系数据库管理系统
+* Sccess：Access是由微软发布的关系数据库管理系统。
