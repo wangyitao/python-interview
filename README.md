@@ -2615,6 +2615,173 @@ FBV和CBV本质是一样的，基于函数的视图叫做FBV，基于类的视�
 - .提高了代码的复用性，可以使用面向对象的技术，比如Mixin（多继承）
 - .可以用不同的函数针对不同的HTTP方法处理，而不是通过很多if判断，提高代码可读性
 
+##### 如何给CBV的程序添加装饰器
+
+```python
+from django.utils.decorators import method_decorator
+# 1、给方法加：
+@method_decorator(check_login)
+def post(self, request):
+	...
+# 2、给dispatch加：
+@method_decorator(check_login)
+def dispatch(self, request, *args, **kwargs):
+	...
+# 3、给类加：
+@method_decorator(check_login, name="get")
+@method_decorator(check_login, name="post")
+class HomeView(View):
+	...
+```
+
+
+
+##### 列举django orm中的所有方法
+
+```
+  <1> all():                  查询所有结果 
+  <2> filter(**kwargs):       它包含了与所给筛选条件相匹配的对象。获取不到返回None
+  <3> get(**kwargs):          返回与所给筛选条件相匹配的对象，返回结果有且只有一个。
+                              如果符合筛选条件的对象超过一个或者没有都会抛出错误。
+  <4> exclude(**kwargs):      它包含了与所给筛选条件不匹配的对象
+  <5> order_by(*field):       对查询结果排序
+  <6> reverse():              对查询结果反向排序 
+  <8> count():                返回数据库中匹配查询(QuerySet)的对象数量。 
+  <9> first():                返回第一条记录 
+  <10> last():                返回最后一条记录 
+  <11> exists():              如果QuerySet包含数据，就返回True，否则返回False
+  <12> values(*field):        返回一个ValueQuerySet——一个特殊的QuerySet，运行后得到的
+                              并不是一系 model的实例化对象，而是一个可迭代的字典序列
+  <13> values_list(*field):   它与values()非常相似，它返回的是一个元组序列，values返回的是一个字典序列
+  <14> distinct():            从返回结果中剔除重复纪录
+```
+
+
+
+##### select_related和prefetch_related的区别
+
+> 前提：有外键存在时，可以很好的减少数据库请求的次数,提高性能
+> select_related通过多表join关联查询,一次性获得所有数据,只执行一次SQL查询
+> prefetch_related分别查询每个表,然后根据它们之间的关系进行处理,执行两次查询
+
+##### filter和exclude的区别？
+
+> 两者取到的值都是QuerySet对象,filter选择满足条件的,exclude:排除满足条件的.
+
+
+
+##### 列举django orm中三种能写sql语句的方法
+
+```
+1.使用execute执行自定义的SQL
+     直接执行SQL语句（类似于pymysql的用法）
+        # 更高灵活度的方式执行原生SQL语句
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute("SELECT DATE_FORMAT(create_time, '%Y-%m') FROM blog_article;")
+        ret = cursor.fetchall()
+        print(ret)
+2.使用extra方法 ：queryset.extra(select={"key": "原生的SQL语句"})
+3.使用raw方法
+    1.执行原始sql并返回模型
+    2.依赖model多用于查询
+```
+
+
+
+##### values和values_list的区别
+
+- values : queryset类型的列表中是字典
+- values_list : queryset类型的列表中是元组
+
+##### cookie和session的区别
+
+* cookie:
+ cookie是保存在浏览器端的键值对,可以用来做用户认证
+* session：
+ 将用户的会话信息保存在服务端,key值是随机产生的字符串,value值是session的内容
+ 依赖于cookie将每个用户的随机字符串保存到用户浏览器上
+* Django中session默认保存在数据库中：django_session表
+* flask,session默认将加密的数据写在用户的cookie中
+
+##### 如何使用django orm批量创建数据
+
+```python
+objs=[models.Book(title="图书{}".format(i+15)) for i in range(100)]
+models.Book.objects.bulk_create(objs)
+```
+
+
+
+##### django的Form组件中，如果字段中包含choices参数，使用两种方式实现数据源实时更新
+
+```python
+# 1. 重写构造函数
+def__init__(self, *args, **kwargs):
+     super().__init__(*args, **kwargs)
+     self.fields["city"].widget.choices = models.City.objects.all().values_list("id", "name")
+
+# 2. 利用ModelChoiceField字段，参数为queryset对象
+authors = form_model.ModelMultipleChoiceField(queryset=models.NNewType.objects.all())//多选
+```
+
+
+
+##### django的Model中的ForeignKey字段中的on_delete参数有什么作用？
+
+- 删除关联表中的数据时,当前表与其关联的field的操作
+- django2.0之后，表与表之间关联的时候,必须要写on_delete参数,否则会报异常
+
+##### django模板中自定义filter和simple_tag的区别
+
+- 自定义filter：{{ 参数1|filter函数名:参数2 }}
+  1.可以与if标签来连用
+  2.自定义时需要写两个形参
+
+```python
+    例子：自定义filter
+            1. 在app01下创建一个叫templatetags的Python包
+            2. 在templatetags的文件夹下创建py文件  myfilters
+            3. 在py文件中写代码
+                from django import template
+                register = template.Library()
+                
+                @register.filter
+                def add_sb(value,arg='aaa'):
+                    return "{}_sb_{}".formart(value,arg)
+                    
+                @register.filter(name='sb')
+                def add_sb(value,arg='aaa'):
+                    return "{}_sb_{}".formart(value,arg)     
+            4. 使用自定义filter
+                {% load myfilters %}
+                {{ name|add_sb:'xxx'}}
+                {{ name|sb:'xxx'}}
+```
+
+- simple_tag:{% simple_tag函数名 参数1 参数2 %}
+  1.可以传多个参数,没有限制
+  2.不能与if标签来连用
+
+```python
+例子：自定义simpletag
+    创建
+        1 、在app01中创建一个名字是templatetags的包，
+        2、在包中创建一个py文件
+        3、在py文件中导入
+              from django import template
+              register = template.Library()
+        4、写函数
+              @register.simple_tag(name="plus")
+              def plus(a,b,c):
+                  return '{}+{}+{}'.format(a,b,c)
+        5、加装饰器@register.simple_tag(name="plus")
+  使用
+      1、导入
+            {% load mytag %}
+      2、使用
+           {% plus 1 2 3 %}
+```
 
 
 
