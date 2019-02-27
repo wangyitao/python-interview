@@ -1,4 +1,5 @@
-## python-interview
+python-interview
+
 [最新版本链接地址](https://github.com/wangyitao/python-interview)
 
 ##### 为什么学python
@@ -1864,10 +1865,16 @@ print(now()-start)
 * 负载均衡其意思就是分摊到多个操作单元上进行执行。
 
 ##### 什么是rpc
-* rpc是一种进程间通信方式。允许像调用本地服务一样调用远程服务。
-* 通俗一点：你这台计算机（客户端）想调用服务器上的程序中的某一个函数达到你的目的。
+
+> #远程过程调用 (RPC) 是一种协议，程序可使用这种协议向网络中的另一台计算机上的程序请求服务
+> #1.RPC采用客户机/服务器模式。请求程序就是一个客户机，而服务提供程序就是一个服务器。
+> #2.首先，客户机调用进程发送一个有进程参数的调用信息到服务进程，然后等待应答信息。
+> #2.在服务器端，进程保持睡眠状态直到调用信息到达为止。当一个调用信息到达，服务器获得进程参数，计算结果，发送答复信息，然后等待下一个调用信息，
+> #3.最后，客户端调用进程接收答复信息，获得进程结果，然后调用执行继续进行。
+
 
 ##### 什么是正向代理和反向代理？
+
 * 正向代理
     * 正向代理类似一个跳板机，代理访问外部资源。
     * 正向代理 是一个位于客户端和原始服务器(origin server)之间的服务器，为了从原始服务器取得内容，客户端向代理发送一个请求并指定目标(原始服务器)，然后代理向原始服务器转交请求并将获得的内容返回给客户端。客户端必须要进行一些特别的设置才能使用正向代理。
@@ -2785,4 +2792,256 @@ authors = form_model.ModelMultipleChoiceField(queryset=models.NNewType.objects.a
 
 
 
+##### django中csrf的实现机制
 
+1. django第一次响应来自某个客户端的请求时,后端随机产生一个token值，把这个token保存在SESSION状态中;同时,后端把这个token放到cookie中交给前端页面；
+2. 下次前端需要发起请求（比如发帖）的时候把这个token值加入到请求数据或者头信息中,一起传给后端；Cookies:{csrftoken:xxxxx}
+3. 后端校验前端请求带过来的token和SESSION里的token是否一致。
+
+##### 基于django使用ajax发送post请求时，都可以使用哪种方法携带csrf token？
+
+```
+1.后端将csrftoken传到前端，发送post请求时携带这个值发送
+data: {
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+  },
+
+2.获取form中隐藏标签的csrftoken值，加入到请求数据中传给后端
+data: {
+          csrfmiddlewaretoken:$('[name="csrfmiddlewaretoken"]').val()
+     },
+
+3.cookie中存在csrftoken,将csrftoken值放到请求头中
+headers:{ "X-CSRFtoken":$.cookie("csrftoken")}
+```
+
+
+
+##### django本身提供了runserver，为什么不能用来部署
+
+1. runserver方法是调试 Django 时经常用到的运行方式，它使用Django自带的
+    WSGI Server 运行，主要在测试和开发中使用，并且 runserver 开启的方式也是单进程 。
+
+2. uWSGI是一个Web服务器，它实现了WSGI协议、uwsgi、http 等协议。注意uwsgi是一种通信协议，而uWSGI是实现uwsgi协议和WSGI协议的 Web 服务器。uWSGI具有超快的性能、低内存占用和多app管理等优点，并且搭配着Nginx就是一个生产环境了，能够将用户访问请求与应用 app 隔离开，实现真正的部署 。相比来讲，支持的并发量更高，方便管理多进程，发挥多核的优势，提升性能。
+
+##### django配置实现数据库读写分离
+
+[参考连接](https://blog.csdn.net/linzi1994/article/details/82934612)
+
+1. 在配置文件中添加slave数据库配置
+2. 创建数据库操作的路由分发类
+3. 配置读写分离路由
+
+##### django中F和Q的作用
+
+* F查询：对数据本身的不同字段进行操作 如:比较和更新
+* Q查询：对对象进行复杂查询，并支持and，or，not等操作符
+
+##### django中only和defer的区别
+
+* defer--> 除了指定字段之外
+* only--> 只查询几个字段
+  * 比如：ret=Book.object.all().only('name')
+  * id始终会查，结果是queryset对象,套book对象(里面只有id与name字段)
+  * 如果取price，会发生什么？他会再次查询数据库，对数据库造成压力
+
+##### django中的Form组件和ModelForm组件的作用
+
+* Form作用：
+    1.在前端生成HTML代码
+    2.对数据作有效性校验
+    3.返回校验信息并展示
+* ModeForm：根据模型类生成From组件,并且可以操作数据库
+
+##### django路由系统中的name的作用
+
+* 用于反向解析路由，相当于给url取个别名，只要这个名字不变，即使对应的url改变
+* 通过改名字也能找到该条url
+
+#####  django如何实现单元测试
+
+[参考链接](https://www.cnblogs.com/1204guo/p/8058449.html)
+
+* django的单元测试使用python的unittest模块，这个模块使用基于类的方法来定义测试。类名为django.test
+
+##### 解释orm中db first和code first的含义
+
+* 数据持久化的方式：
+  * db first基于已存在的数据库，生成模型
+  * code first基于已存在的模型，生成数据库
+
+##### django-debug-toolbar的作用
+
+* 是django的第三方工具包，给django扩展了调试功能，包括查看sql语句，db查询次数，request，headers等
+
+##### django中如何根据数据库表生成model中的类？
+
+1. 在settings中设置要连接的数据库
+
+2. 生成model模型文件
+
+   ```python
+   python manage.py inspectdb
+   ```
+
+3. 将模型文件导入到models中
+
+   ```python
+   python manage.py inspectdb > app/models.py
+   ```
+
+   
+
+##### 使用orm和原生sql的优缺点
+
+1. orm的开发速度快,操作简单。使开发更加对象化
+2. 执行速度慢、处理多表联查等复杂操作时，orm的语法会变得复杂
+3. sql开发速度慢，执行速度快，性能强
+
+##### django的contenttype组件的作用
+
+* 这个组件保存了项目中所有app和model的对应关系,每当我们创建了新的model并执行数据库迁移后，ContentType表中就会自动新增一条记录
+* 当一张表和多个表FK关联,并且多个FK中只能选择其中一个或其中n个时,可以利用contenttypes
+
+##### 谈谈你对restful规范的认识
+
+> #首先restful是一种软件架构风格或者说是一种设计风格，并不是标准，它只是提供了一组设计#原则和约束条件，主要用于客户端和服务器交互类的软件。     
+> #就像设计模式一样，并不是一定要遵循这些原则，而是基于这个风格设计的软件可以更简洁，更#有层次，我们可以根据开发的实际情况，做相应的改变。
+> #它里面提到了一些规范，例如：
+> #1.restful 提倡面向资源编程,在url接口中尽量要使用名词，不要使用动词             
+> #2、在url接口中推荐使用Https协议，让网络接口更加安全
+> #https://www.bootcss.com/v1/mycss？page=3
+> #（Https是Http的安全版，即HTTP下加入SSL层，HTTPS的安全基础是SSL，
+> #因此加密的详细内容就需要SSL（安全套接层协议））                          
+> #3、在url中可以体现版本号
+> #https://v1.bootcss.com/mycss
+> #不同的版本可以有不同的接口，使其更加简洁，清晰             
+> #4、url中可以体现是否是API接口 
+> #https://www.bootcss.com/api/mycss            
+> #5、url中可以添加条件去筛选匹配
+> #https://www.bootcss.com/v1/mycss？page=3             
+> #6、可以根据Http不同的method，进行不同的资源操作
+> #（5种方法：GET / POST / PUT / DELETE / PATCH）             
+> #7、响应式应该设置状态码
+> #8、有返回值，而且格式为统一的json格式             
+> #9、返回错误信息
+> #返回值携带错误信息             
+> #10、返回结果中要提供帮助链接，即API最好做到Hypermedia
+> #如果遇到需要跳转的情况 携带调转接口的URL
+>     　　ret = {
+>             code: 1000,
+>             data:{
+>             id:1,
+>             name:'小强',
+>             depart_id:http://www.luffycity.com/api/v1/depart/8/
+>             }
+>     }
+
+##### 接口的幂等性是什么意思？
+
+1. 是系统的接口对外一种承诺(而不是实现)
+2. 承诺只要调用接口成功，外部多次调用对系统的影响都是一致的，不会对资源重复操作
+
+##### 为什么要使用API
+
+* 系统间为了调用数据
+* 数据传输格式：json和xml
+
+##### 为什么要使用django rest framework框架
+
+> 能自动生成符合 RESTful 规范的 API
+> 1.在开发REST API的视图中，虽然每个视图具体操作的数据不同，
+> 但增、删、改、查的实现流程基本一样,这部分的代码可以简写
+> 2.在序列化与反序列化时，虽然操作的数据不同，但是执行的过程却相似,这部分的代码也可以简写
+> REST framework可以帮助简化上述两部分的代码编写，大大提高REST API的开发速度
+
+##### django rest framework框架中都有哪些组件
+
+> 1.序列化组件:serializers  对queryset序列化以及对请求数据格式校验
+> 2.路由组件routers 进行路由分发
+> 3.视图组件ModelViewSet  帮助开发者提供了一些类，并在类中提供了多个方法
+> 4.认证组件 写一个类并注册到认证类(authentication_classes)，在类的的authticate方法中编写认证逻
+> 5.权限组件 写一个类并注册到权限类(permission_classes)，在类的的has_permission方法中编写认证逻辑。 
+> 6.频率限制 写一个类并注册到频率类(throttle_classes)，在类的的allow_request/wait 方法中编写认证逻辑
+> 7.解析器  选择对数据解析的类，在解析器类中注册(parser_classes)
+> 8.渲染器 定义数据如何渲染到到页面上,在渲染器类中注册(renderer_classes)
+> 9.分页  对获取到的数据进行分页处理, pagination_class
+> 10.版本  版本控制用来在不同的客户端使用不同的行为
+> 在url中设置version参数，用户请求时候传入参数。在request.version中获取版本，根据版本不同 做不同处理 
+
+##### 简述django rest framework框架的认证流程
+
+1. 用户请求走进来后,走APIView,初始化了默认的认证方法
+2. 走到APIView的dispatch方法,initial方法调用了request.user
+3. 如果我们配置了认证类,走我们自己认证类中的authentication方法
+
+##### django rest framework如何实现用户的访问频率控制
+
+```
+#使用IP/用户账号作为键，每次的访问时间戳作为值，构造一个字典形式的数据，存起来，每次访问时对时间戳列表的元素进行判断，
+#把超时的删掉，再计算列表剩余的元素数就能做到频率限制了 
+#匿名用户：使用IP控制，但是无法完全控制，因为用户可以换代理IP登录用户：使用账号控制，但是如果有很多账号，也无法限制
+```
+
+
+
+##### 给用户提供一个接口之前需要提前做什么
+
+1. 跟前端进行交互，确定前端要什么
+2. 把需求写成文档保存
+
+##### PV和UV
+
+1. PV：页面访问量，每打开一次页面PV计算+1，页面刷新也是
+2. UV：独立访问数，一台电脑终端为一个访客
+
+##### 如何实现用户的登录认证
+
+1. 使用cookie session
+2. token 登录成功后生成加密字符串
+3. JWT：json web token 缩写 它将用户信息加密到token中，服务器不保存任何用户信息服务器通过使用保存的秘钥来验证token的正确性
+
+##### 简述MVC和MTV
+
+1. MVC软件系统分为三个基本部分：模型(Model)、视图(View)和控制器(Controller)
+	* Model：负责业务对象与数据库的映射(ORM)
+	* View：负责与用户的交互
+	* Control：接受用户的输入调用模型和视图完成用户的请求
+2. Django框架的MTV设计模式借鉴了MVC框架的思想,三部分为：Model、Template和View
+	* Model(模型)：负责业务对象与数据库的对象(ORM)
+	* Template(模版)：负责如何把页面展示给用户
+	* View(视图)：负责业务逻辑，并在适当的时候调用Model和Template
+* 此外,Django还有一个urls分发器,
+* 它将一个个URL的页面请求分发给不同的view处理,view再调用相应的Model和Template
+
+##### git的常见命令
+
+[参考链接](https://www.cnblogs.com/my--sunshine/p/7093412.html)
+
+* git init：在本地新建一个repo,进入一个项目目录,执行git init,会初始化一个repo,并在当前文件夹下创建一个.git文件夹.
+
+* git clone：获取一个url对应的远程Git repo, 创建一个local copy.
+
+* git status：查询repo的状态。
+
+* git log：查看一个分支的提交历史。
+
+* git diff：查看当前文件和暂存区域之间的差异
+
+* git commit：提交已经被add进来的改动
+
+* git reset：还原到某个提交状态
+
+* git checkout：切换分支
+
+* git merge：把一个分支merge进当前的分支
+
+* git tag：在一个提交上建立一个书签
+
+* git pull：更新本地
+
+* git push：提交分支到远程服务器
+
+* git stash：吧当前改动压入一个栈
+
+  
